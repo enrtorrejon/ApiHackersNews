@@ -1,0 +1,6 @@
+@ApiHackersNews_HostAddress = http://localhost:5032
+
+GET {{ApiHackersNews_HostAddress}}/api/top-stories/{limit}
+Accept: application/json
+
+###
