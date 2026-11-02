@@ -157,3 +157,6 @@ ApiHackersNews/
 Inside the text logs, look for the following cache tracking keys to monitor performance metrics:
 - `🌐 [CACHE MISS]` — Triggered only when memory data is missing; fires an out-of-band network thread to load live resources.
 - `📦 [CACHE HIT]` — Instant runtime retrieval from local RAM. 
+
+##  Improvements
+Improving logs like error, warning or info logs
