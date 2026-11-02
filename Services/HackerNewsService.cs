@@ -1,22 +1,25 @@
 using Microsoft.Extensions.Caching.Memory;
 using System.Net.Http.Json;
 using ApiHackersNews.DataModel;
+using Microsoft.Extensions.Configuration;
 
 namespace ApiHackersNews.Services;
 // --- Core Service Implementation ---
 // Utilizing C# Primary Constructors for clean Dependency Injection
-public class HackerNewsService(IHttpClientFactory clientFactory, IMemoryCache cache):IHackerNewsService
+public class HackerNewsService(IHttpClientFactory clientFactory, IMemoryCache cache, IConfiguration configuration):IHackerNewsService
 {
-    private const string BaseUrl = "https://hacker-news.firebaseio.com/v0/";
+    private readonly string BaseUrl = configuration["ApiHackersNews:BaseUrl"]; // Base URL for the Hacker News API, loaded from configuration settings
+    private readonly int topStoriesCacheDurationInMinutes = configuration.GetValue<int>("ApiHackersNews:CacheSettings:TopStoriesCacheDurationInMinutes");
+    private readonly int itemCacheDurationInMinutes = configuration.GetValue<int>("ApiHackersNews:CacheSettings:ItemCacheDurationInMinutes");
     private const string CacheKey = "TopStoriesList";
     private readonly HttpClient _httpClient = clientFactory.CreateClient();
 
     public async Task<IEnumerable<StoryDto>> GetTopStoriesAsync(int limit)
     {
-        // 1. Fetch or Cache the list of Top Story IDs (cached for 2 minutes)
+        // 1. Fetch or Cache the list of Top Story IDs (cached for 2 minutes, check ApplicationSettings for duration)
         var storyIds = await cache.GetOrCreateAsync(CacheKey, async entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(topStoriesCacheDurationInMinutes);
             var response = await _httpClient.GetFromJsonAsync<List<int>>($"{BaseUrl}topstories.json");
             return response ?? [];
         });
@@ -38,10 +41,10 @@ public class HackerNewsService(IHttpClientFactory clientFactory, IMemoryCache ca
     {
         string itemCacheKey = $"Story_{id}";
 
-        // Cache individual stories for 10 minutes since old stories rarely change details
+        // Cache individual stories for 10 minutes (check ApplicationSettings for duration) since old stories rarely change details
         return await cache.GetOrCreateAsync(itemCacheKey, async entry =>
         {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(itemCacheDurationInMinutes);
             try
             {
                 var item = await _httpClient.GetFromJsonAsync<HackerNewsItem>($"{BaseUrl}item/{id}.json");
