@@ -9,10 +9,6 @@ public static class TopStories
     {
         app.MapGet("/api/top-stories/{limit}", async (int limit,  IHackerNewsService hnService) =>
         {
-
-        // Enforce reasonable boundaries for query parameters
-        if (limit is < 1 or > 50) limit = 10;
-
         try
         {
             var stories = await hnService.GetTopStoriesAsync(limit);
