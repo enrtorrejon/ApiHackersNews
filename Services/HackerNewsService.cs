@@ -5,7 +5,7 @@ using ApiHackersNews.DataModel;
 namespace ApiHackersNews.Services;
 // --- Core Service Implementation ---
 // Utilizing C# Primary Constructors for clean Dependency Injection
-public class HackerNewsService(IHttpClientFactory clientFactory, IMemoryCache cache)
+public class HackerNewsService(IHttpClientFactory clientFactory, IMemoryCache cache):IHackerNewsService
 {
     private const string BaseUrl = "https://hacker-news.firebaseio.com/v0/";
     private const string CacheKey = "TopStoriesList";
